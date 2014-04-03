@@ -1,3 +1,5 @@
+Software Project:
+
 Emily Smith smiemi20@evergreen.edu
 Calvin Tuunanen tuucal26@evergeen.edu
 Jeffrey Green grejef04@evergreen.edu
@@ -7,3 +9,12 @@ Plan software project
 Read chapters 1 & 2 of Haskell - The Craft of Functional Programming
 Read chapters 1 & 2 of Learn You a Haskell for Great Good
 Begin work in "Learn Haskell Fast and Hard"
+
+
+Hardware Project:
+Bodhi Stanberry bodhi.stanberry@gmail.com
+Emily Smith smiemi20@evergreen.edu
+
+Week Goals:
+Price compare for Lego Minestorm projects
+Read Arduino Workshop Chapters 1-3
