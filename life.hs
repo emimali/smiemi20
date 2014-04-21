@@ -5,6 +5,7 @@ module Main where
 import Safe (atMay) 
 
 import Data.Maybe (catMaybes)
+import Data.List (transpose)
 
 import Control.Concurrent (threadDelay)
 
@@ -33,6 +34,7 @@ neighborsOf :: Board -> (Int, Int) -> [Tile]
 neighborsOf board (x, y) = neighbors
 	where
 	neighbors = catMaybes (map (lookUp board) [(x', y') | x' <- [x, x+1, x-1], y' <- [y, y+1, y-1], (x', y') /= (x, y)])
+
 testBoard :: Board
 testBoard =
 		[ allOff, allOff, allOff, allOff,
@@ -41,13 +43,20 @@ testBoard =
 		threeOff ++ [On, On, On] ++ fourOff,
 		allOff, allOff, allOff
 		]
---	-BOAT TESTS- [ [On, On, Off], [On, Off, On], [Off, On, Off]]
+--	-BOAT TESTS- 
 		where 
 		allOff = take 10 (repeat Off)
 		sixOff = take 6 (repeat Off)
 		threeOff = take 3 (repeat Off)
 		fourOff = take 4 (repeat Off)
 		fiveOff = take 5 (repeat Off)
+
+-- This board should be a still life.
+boat :: Board
+boat = [ [On, On, Off], [On, Off, On], [Off, On, Off] ]
+
+-- This is a small periodic board.
+blinker = [ [Off, On, Off], [Off, On, Off], [Off, On, Off] ]
 
 lookUp :: Board -> (Int, Int) -> Maybe Tile 
 lookUp board (x, y) = case atMay board x of
@@ -58,11 +67,15 @@ turn :: Board -> Board
 
 turn board = newBoard
 	where 
-	maxY = length board - 1
-	coordinates = map makeRow [0..maxY]
-	makeRow y = zip [0..maxY] (repeat y)
-	liveCellsMatrix  = map (map (length.filter (== On) .neighborsOf board)) coordinates
+	countNeighbors = length . filter (== On) . neighborsOf board
+	liveCellsMatrix  = map (map countNeighbors) (coordinates board)
 	newBoard = zipWith (zipWith rule) board liveCellsMatrix
+
+coordinates :: Board -> [[(Int, Int)]]
+coordinates board = transpose (map makeRow [0..maxY])
+	where
+	makeRow y = zip [0..maxY] (repeat y)
+	maxY = length board - 1
 
 prettyPrint :: Board -> IO () 
 
