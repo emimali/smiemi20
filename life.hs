@@ -6,6 +6,8 @@ import Safe (atMay)
 
 import Data.Maybe (catMaybes)
 
+import Control.Concurrent (threadDelay)
+
 data Tile = On | Off deriving (Show, Eq)
 
 type Board = [[Tile]]
@@ -30,23 +32,22 @@ neighborsOf :: Board -> (Int, Int) -> [Tile]
 
 neighborsOf board (x, y) = neighbors
 	where
-	neighbors = catMaybes (map (lookUp board) [n, s, w, e, nw, ne, sw, ne])
-	n = (x, y+1)
-	s = (x, y-1)
-	w = (x-1, y)
-	e = (x+1, y)
-	nw = (x+1, y-1)
-	ne = (x+1, y+1)
-	sw = (x-1, y-1)
-	se = (x-1, y+1)
-
+	neighbors = catMaybes (map (lookUp board) [(x', y') | x' <- [x, x+1, x-1], y' <- [y, y+1, y-1], (x', y') /= (x, y)])
 testBoard :: Board
 testBoard =
-		[ [On, Off]
-		, [Off, On]
+		[ allOff, allOff, allOff, allOff,
+		fourOff ++ [On] ++ fiveOff, 
+		fiveOff ++ [On] ++ fourOff, 
+		threeOff ++ [On, On, On] ++ fourOff,
+		allOff, allOff, allOff
 		]
-
-data Maybe a = Nothing | Just a
+--	-BOAT TESTS- [ [On, On, Off], [On, Off, On], [Off, On, Off]]
+		where 
+		allOff = take 10 (repeat Off)
+		sixOff = take 6 (repeat Off)
+		threeOff = take 3 (repeat Off)
+		fourOff = take 4 (repeat Off)
+		fiveOff = take 5 (repeat Off)
 
 lookUp :: Board -> (Int, Int) -> Maybe Tile 
 lookUp board (x, y) = case atMay board x of
@@ -71,3 +72,13 @@ prettyPrint board = mapM_ (putStrLn . map printTile) board
 		On -> 'x'
 		Off -> '_'
 -- in ghci - map (rule On/Off) [0..8] 
+
+evolve :: Board -> IO ()
+
+evolve board = do 
+	prettyPrint board
+	putStrLn ""
+	threadDelay 1000000 
+	evolve newBoard
+	where
+	newBoard = turn board
