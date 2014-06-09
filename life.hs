@@ -1,5 +1,3 @@
--- grid of cells on a board
-
 module Main where
 
 import Safe (atMay) 
@@ -16,8 +14,6 @@ type Board = [[Tile]]
 main = return ()
 
 rule :: Tile -> Int -> Tile
--- Tile -> (Int -> Tile)
--- :: means 'has type'
 
 rule tile liveCells = case tile of
 	On -> if liveCells < 2 || liveCells > 3
@@ -27,13 +23,12 @@ rule tile liveCells = case tile of
 	Off -> if liveCells == 3
 		then On
 		else Off
--- || means 'or'
 
 neighborsOf :: Board -> (Int, Int) -> [Tile]
 
 neighborsOf board (x, y) = neighbors
 	where
-	neighbors = catMaybes (map (lookUp board) [(x', y') | x' <- [x, x+1, x-1], y' <- [y, y+1, y-1], (x', y') /= (x, y)])
+	neighbors = map (lookUp board) [(x', y') | x' <- [x, x+1, x-1], y' <- [y, y+1, y-1], (x', y') /= (x, y)]
 
 testBoard :: Board
 testBoard =
@@ -41,27 +36,40 @@ testBoard =
 		fourOff ++ [On] ++ fiveOff, 
 		fiveOff ++ [On] ++ fourOff, 
 		threeOff ++ [On, On, On] ++ fourOff,
-		allOff, allOff, allOff
-		]
---	-BOAT TESTS- 
+		allOff, allOff, allOff,
+		allOff, allOff, allOff, allOff, allOff, allOff, allOff, allOff, allOff, allOff, allOff, allOff, allOff, 
+		allOff ]
+
 		where 
 		allOff = take 10 (repeat Off)
 		sixOff = take 6 (repeat Off)
 		threeOff = take 3 (repeat Off)
 		fourOff = take 4 (repeat Off)
 		fiveOff = take 5 (repeat Off)
+		fortyfiveOff = take 45 (repeat Off)
+		fortyfourOff = take 44 (repeat Off)
+		twoOff = take 2 (repeat Off)
 
--- This board should be a still life.
 boat :: Board
 boat = [ [On, On, Off], [On, Off, On], [Off, On, Off] ]
 
--- This is a small periodic board.
 blinker = [ [Off, On, Off], [Off, On, Off], [Off, On, Off] ]
 
-lookUp :: Board -> (Int, Int) -> Maybe Tile 
-lookUp board (x, y) = case atMay board x of
-	Nothing -> Nothing
-	Just column -> atMay column y 
+lookUp :: Board -> (Int, Int) -> Tile 
+lookUp board (x, y) = (board !! newX) !! newY
+	where
+	maxX = length board - 1
+	maxY = length (head board) - 1
+	newY = if y < 0
+		then maxY
+		else if y > maxY 
+			then 0
+			else y
+	newX = if x < 0
+		then maxX
+		else if x > maxX
+			then 0
+			else x
 
 turn :: Board -> Board
 
@@ -83,15 +91,14 @@ prettyPrint board = mapM_ (putStrLn . map printTile) board
 	where 
 	printTile tile = case tile of 
 		On -> 'x'
-		Off -> '_'
--- in ghci - map (rule On/Off) [0..8] 
+		Off -> '-'
 
 evolve :: Board -> IO ()
 
 evolve board = do 
 	prettyPrint board
 	putStrLn ""
-	threadDelay 1000000 
+	threadDelay 100000 
 	evolve newBoard
 	where
 	newBoard = turn board
